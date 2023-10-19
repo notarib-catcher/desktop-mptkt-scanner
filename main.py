@@ -1,12 +1,15 @@
-import cv2, queue, threading, time
-import PIL.Image, PIL.ImageTk
-from pyzbar.pyzbar import decode
-from tkinter import ttk
-import tkinter as tk
-import subprocess
-
-# Fetch the screen size
 import ctypes
+import subprocess
+import tkinter as tk
+
+import PIL.Image
+import PIL.ImageTk
+import cv2
+import queue
+import threading
+import time
+from pyzbar.pyzbar import decode
+
 user32 = ctypes.windll.user32
 screensize = user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)
 
@@ -24,7 +27,7 @@ subprocess.run(["adb", "forward", "tcp:5000", "tcp:5000"])
 class VideoCapture:
 
     def __init__(self, name):
-        self.Ewidth, self.Eheight = screensize[0]//2, screensize[1]//2
+        self.Ewidth, self.Eheight = screensize[0] // 2, screensize[1] // 2
         self.cap = cv2.VideoCapture(name)
         self.q = queue.Queue()
         t = threading.Thread(target=self._reader)
@@ -90,7 +93,7 @@ def readUntilQR(callback, canvas, root):
             image = PIL.ImageTk.PhotoImage(image=cap_frame)
 
             # Display the image onto the tkinter canvas
-            canvas.create_image(vfeed.Ewidth//2, vfeed.Eheight//2, image=image)
+            canvas.create_image(vfeed.Ewidth // 2, vfeed.Eheight // 2, image=image)
             root.update()
 
             # Invoke the callback function
@@ -126,6 +129,7 @@ def readUntilQR(callback, canvas, root):
 def processQR(decodedData):
     print('Decoder')
 
+
 # Starts main process - Invoked by tkinter after a 5ms delay when the window opens
 def start():
     readUntilQR(processQR, canvas, root)
@@ -139,5 +143,5 @@ canvas = tk.Canvas(root, width=vfeed.Ewidth, height=vfeed.Eheight)
 canvas.pack(anchor='nw')
 
 # Start the app
-root.after(5,start)
+root.after(5, start)
 root.mainloop()
