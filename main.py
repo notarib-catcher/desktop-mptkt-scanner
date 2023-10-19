@@ -118,7 +118,9 @@ def readUntilQR(callback, canvas, root):
             time.sleep(1)
 
 
-# Invoked whenever a QR is found and the QR string is passed to it
+# Invoked whenever a QR is found and the QR object is passed to it
+# QR object is an array of all the QR codes detected, each element in the array is a QR code object
+# See pyzbar documentation for a better explanation
 # Note: This is synchronous, so it will stop the processing of subsequent frames while it runs
 # This is intentional (I need playback to pause while the webserver calls are made)
 def processQR(decodedData):
