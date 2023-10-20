@@ -56,7 +56,7 @@ class ServerBridge:
             keyring.set_password('mp.ticketing.service', 'mp.kiosk.name', name)
 
     # Updates assignment
-    # May cause the entire cache and also all stored credentials for this app to be reset
+    # Might cause the entire cache and also all stored credentials for this app to be reset
     # If the server sends a 409 (CONFLICT), 401 (INVALID TOKEN) or 404 (NO ENTRY FOUND)
     # NOTE:
     # If the assignment id is "!ALL!" then DO NOT ENABLE THE MARK ATTENDANCE BUTTON EVEN IF THE PASS IS VALID.
