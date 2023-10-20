@@ -7,13 +7,16 @@ from enum import IntEnum
 from PIL import Image
 from PIL.ImageTk import PhotoImage
 
+from frames.info_frame import InfoFrame, QueryResult
+from frames.pass_type import PassType
+
 
 class FrameType(IntEnum):
     """
     Enum to retrieve the frame each corner of the display.
     """
     VIDEO = 1
-    QR_CODE = 2
+    INFO = 2
     FOO = 3
     BAR = 4
 
@@ -46,11 +49,11 @@ class Display:
         self.height = self._root.winfo_screenheight()
 
         # Canvas is the code child of the root. It is to be modified and never the root directly.
-        self._canvas = tk.Canvas(self._root, width=self.width, height=self.height, bg='white')
+        self._canvas = tk.Canvas(self._root, width=self.width, height=self.height, bg='black')
         self._canvas.pack()
 
-        qr_code_image = Image.open('image.jpeg')
-        self._init_frames(qr_code_image)
+        video_frame_image = Image.open('image.jpeg')
+        self._init_frames(video_frame_image)
 
     def _init_frames(self, image: Image) -> dict[FrameType, tk.Frame]:
         """
@@ -64,17 +67,18 @@ class Display:
         """
 
         # Top-left frame to show incoming video streaming data.
-        video_frame = tk.Frame(self._canvas, bg='red', width=self.width // 2, height=self.height // 2)
-        video_label = tk.Label(video_frame, text='Video', fg='white', bg='red', font=('Helvetica', 48, 'bold'))
-        video_label.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
-
         photo_image = PhotoImage(image)
 
-        # Top-right frame to hold an image.
-        qr_code_frame = tk.Frame(self._canvas, width=self.width // 2, height=self.height // 2)
-        qr_code_label = tk.Label(qr_code_frame, image=photo_image)
-        qr_code_label.image = photo_image
-        qr_code_label.pack(expand=True)
+        video_frame = tk.Frame(self._canvas, bg='red', width=self.width // 2, height=self.height // 2)
+        video_label = tk.Label(video_frame, image=photo_image)
+        video_label.image = photo_image
+        video_label.pack(expand=True)
+
+        # Top-right frame to hold pass information.
+        info_frame = InfoFrame(
+            self._canvas, 123, 'ABC', 123, PassType.E_SPORTS, QueryResult.REVOKED,
+            'Lorem ipsum dolor si amet.'
+        )
 
         # Bottom-right dummy frame.
         foo_frame = tk.Frame(self._canvas, bg='blue', width=self.width // 2, height=self.height // 2)
@@ -87,12 +91,12 @@ class Display:
         bar_label.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
 
         self._canvas.create_window(0, 0, anchor=tk.NW, window=video_frame)
-        self._canvas.create_window(self.width // 2, 0, anchor=tk.NW, window=qr_code_frame)
+        self._canvas.create_window(self.width // 2, 0, anchor=tk.NW, window=info_frame.frame)
         self._canvas.create_window(self.width // 2, self.height // 2, anchor=tk.NW, window=foo_frame)
         self._canvas.create_window(0, self.height // 2, anchor=tk.NW, window=bar_frame)
 
         return {
-            FrameType.VIDEO: video_frame, FrameType.QR_CODE: qr_code_frame, FrameType.FOO: foo_frame,
+            FrameType.VIDEO: video_frame, FrameType.INFO: info_frame, FrameType.FOO: foo_frame,
             FrameType.BAR: bar_frame
         }
 
@@ -101,3 +105,8 @@ class Display:
         Run the mainloop of the root.
         """
         self._root.mainloop()
+
+
+if __name__ == '__main__':
+    display = Display('Ticket Validation Kiosk', True)
+    display.run()
