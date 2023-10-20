@@ -33,6 +33,9 @@ class ServerBridge:
             keyring.delete_password('mp.ticketing.service', self.server_ip)
             keyring.delete_password('mp.ticketing.service', 'mp.server')
             keyring.delete_password('mp.ticketing.service', 'mp.kiosk.name')
+            self.server_ip = None
+            self.kiosk_token = None
+            self.kiosk_name = None
             self.assignment = None
             self.need_init = True
 
