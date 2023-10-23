@@ -52,7 +52,7 @@ class Display:
         self._canvas = tk.Canvas(self._root, width=self.width, height=self.height, bg='black')
         self._canvas.pack()
 
-        video_frame_image = Image.open('image.jpeg')
+        video_frame_image = Image.open('assets/image.jpeg')
         self._init_frames(video_frame_image)
 
     def _init_frames(self, image: Image) -> dict[FrameType, tk.Frame]:
