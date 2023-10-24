@@ -7,6 +7,7 @@ from enum import IntEnum
 from PIL import Image
 from PIL.ImageTk import PhotoImage
 
+from frames.controls_frame import ControlsFrame
 from frames.info_frame import InfoFrame, QueryResult
 from frames.pass_type import PassType
 
@@ -26,7 +27,7 @@ class Display:
     Main display class. It composes the tk.Tk() and its corresponding canvas and frame children.
     """
 
-    def __init__(self, title: str, full_screen: bool):
+    def __init__(self, title: str, full_screen: bool, kiosk_name: str, server_ip: str, assignment_name: str):
         """
         Initialise the display but not run it.
 
@@ -53,7 +54,9 @@ class Display:
         self._canvas.pack()
 
         video_frame_image = Image.open('assets/image.jpeg')
+
         self._init_frames(video_frame_image)
+        self._init_status_bar(kiosk_name, server_ip, assignment_name)
 
     def _init_frames(self, image: Image) -> dict[FrameType, tk.Frame]:
         """
@@ -86,19 +89,24 @@ class Display:
         foo_label.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
 
         # Bottom-left dummy frame.
-        bar_frame = tk.Frame(self._canvas, bg='green', width=self.width // 2, height=self.height // 2)
-        bar_label = tk.Label(bar_frame, text='Bar', fg='white', bg='green', font=('Helvetica', 48, 'bold'))
-        bar_label.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
+        bar_frame = ControlsFrame(self._canvas)
+        # bar_frame = tk.Frame(self._canvas, bg='green', width=self.width // 2, height=self.height // 2)
 
         self._canvas.create_window(0, 0, anchor=tk.NW, window=video_frame)
         self._canvas.create_window(self.width // 2, 0, anchor=tk.NW, window=info_frame.frame)
         self._canvas.create_window(self.width // 2, self.height // 2, anchor=tk.NW, window=foo_frame)
-        self._canvas.create_window(0, self.height // 2, anchor=tk.NW, window=bar_frame)
+        self._canvas.create_window(0, self.height // 2, anchor=tk.NW, window=bar_frame.frame)
 
         return {
             FrameType.VIDEO: video_frame, FrameType.INFO: info_frame, FrameType.FOO: foo_frame,
             FrameType.BAR: bar_frame
         }
+
+    def _init_status_bar(self, kiosk_name: str, server_ip: str, assignment_name: str):
+        text = f'{kiosk_name.title()} enslaved to {server_ip.lower()} assigned to {assignment_name.title()}'
+
+        status_bar_label = tk.Label(self._canvas, text=text, fg='white', bg='black', width=self._canvas.winfo_screenwidth())
+        status_bar_label.place(relx=0.5, rely=0, anchor=tk.N)
 
     def run(self):
         """
@@ -108,5 +116,5 @@ class Display:
 
 
 if __name__ == '__main__':
-    display = Display('Ticket Validation Kiosk', True)
+    display = Display('Ticket Validation Kiosk', False, 'Check Kiosk', '192.168.1.1', 'Pass Checking')
     display.run()
