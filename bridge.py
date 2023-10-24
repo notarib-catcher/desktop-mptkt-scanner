@@ -185,5 +185,3 @@ class ServerBridge:
 
             case _:
                 return False
-
-srb = ServerBridge()
