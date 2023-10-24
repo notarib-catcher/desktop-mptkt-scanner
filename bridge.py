@@ -55,7 +55,7 @@ class ServerBridge:
             self.assignment = None
             self.need_init = True
 
-    def enroll(self, address: str, code: int, name: str):
+    def enroll(self, address: str, code: str, name: str):
         """
         Register with the server and store credentials for future use. Credentials received are stored into system
         keystore and are persisted across restarts.
