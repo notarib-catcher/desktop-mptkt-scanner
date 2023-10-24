@@ -143,6 +143,7 @@ class ServerBridge:
 
         if response.status_code == 200:
             if 'staff' in response.text:
+                default_res['status'] = 'DO NOT IMPEDE'
                 default_res['subtext'] = 'STAFF'
 
             return default_res
@@ -151,10 +152,10 @@ class ServerBridge:
             default_res['status'] = response.status_code
 
             rsplit = response.text.upper().split('REASON:', 1)
-            default_res['text'] = rsplit[0]
+            default_res['text'] = rsplit[0].strip()
 
             if len(rsplit) > 1:
-                default_res['subtext'] = rsplit[1]
+                default_res['subtext'] = rsplit[1].strip()
 
             return default_res
 
