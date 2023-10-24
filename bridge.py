@@ -26,8 +26,11 @@ class ServerBridge:
             kiosk_name = keyring.get_password('mp.ticketing.service', 'mp.kiosk.name')
 
         if kiosk_token is None:
-            keyring.delete_password('mp.ticketing.service', 'mp.server')
-            keyring.delete_password('mp.ticketing.service', 'mp.kiosk.name')
+            try:
+                keyring.delete_password('mp.ticketing.service', 'mp.server')
+                keyring.delete_password('mp.ticketing.service', 'mp.kiosk.name')
+            except:
+                print("Exception while deleting, continuing")
 
         else:
             self.need_init = False
@@ -60,11 +63,10 @@ class ServerBridge:
         Register with the server and store credentials for future use. Credentials received are stored into system
         keystore and are persisted across restarts.
         """
-
         if not self.need_init:
-            self.clear_creds()
+            return
 
-        payload: dict[str, str | int] = {
+        payload: dict = {
             'code': code,
             'name': name
         }
@@ -151,7 +153,7 @@ class ServerBridge:
             rsplit = response.text.upper().split('REASON:', 1)
             default_res['text'] = rsplit[0]
 
-            if rsplit[1] != '':
+            if len(rsplit) > 1:
                 default_res['subtext'] = rsplit[1]
 
             return default_res
@@ -183,3 +185,5 @@ class ServerBridge:
 
             case _:
                 return False
+
+srb = ServerBridge()
