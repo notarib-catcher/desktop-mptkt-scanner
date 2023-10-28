@@ -7,12 +7,12 @@ from enum import Enum
 from typing import Optional
 
 import frames
-from frames.pass_type import PassType
+from utils.bridge import ServerBridge
 
 
 class QueryResult(Enum):
     """Types of query results on the pass."""
-    VALID = 'valid'
+    MARKED = 'marked'
     STAFF = 'staff'
     REVOKED = 'revoked'
 
@@ -23,8 +23,7 @@ class InfoFrame:
     """
 
     def __init__(
-            self, parent: tk.Misc, id_: int, name: str, phone_number: int, pass_type: PassType,
-            query_result: QueryResult, result_data: Optional[str] = None
+        self, parent: tk.Misc, bridge: ServerBridge, id_: int, name: str, phone_number: str, pass_type: str
     ):
         """
         Initialize the information frame.
@@ -39,10 +38,6 @@ class InfoFrame:
         :type phone_number: int
         :param pass_type: Pass type.
         :type pass_type: PassType
-        :param query_result: Query result on the pass.
-        :type query_result: QueryResult
-        :param result_data: Additional query result data, if required.
-        :type result_data: Optional[str]
         """
 
         fg_color = 'white'
@@ -53,6 +48,8 @@ class InfoFrame:
         self.canvas = tk.Canvas(
             self.frame, width=self.frame.cget('width'), height=self.frame.cget('height'), bg=bg_color
         )
+
+        self.bridge = bridge
 
         self.canvas.pack()
 
@@ -70,55 +67,72 @@ class InfoFrame:
         )
 
         self.pass_type_label = tk.Label(
-            self.canvas, text=f'Pass Type: {pass_type.value.title()}', font=frames.generate_font(), fg=fg_color,
+            self.canvas, text=f'Pass Type: {pass_type}', font=frames.generate_font(), fg=fg_color,
             bg=bg_color
         )
-
-        self.generate_pass_info_box(query_result, result_data)
 
         self.id_label.place(relx=0.5, rely=0, anchor=tk.N)
         self.name_label.place(relx=0.5, rely=0.35, anchor=tk.CENTER)
         self.phone_number_label.place(relx=0.5, rely=0.45, anchor=tk.CENTER)
         self.pass_type_label.place(relx=0.5, rely=0.55, anchor=tk.CENTER)
 
-    def generate_pass_info_box(self, query_result: QueryResult, result_data: Optional[str]):
-        """
-        Generate the information box with the pass query results.
+        self.generate_pass_info_box()
 
-        :param query_result: Query result on the pass.
-        :type query_result: QueryResult
-        :param result_data: Additional query data, if required.
-        :type result_data: Optional[str]
-        """
+    def set_data(
+        self, id_: int, name: str, phone_number: str, pass_type: str
+    ):
+        self.id_label.config(text=id_)
+        self.name_label.config(text=name)
+        self.phone_number_label.config(text=phone_number)
+        self.pass_type_label.config(text=pass_type)
 
+    def generate_pass_info_box(self, result=None):
         canvas_width = int(self.canvas.cget('width'))
         canvas_height = int(self.canvas.cget('height'))
 
         width_padding = canvas_width // 10
         height_padding = canvas_height // 10
 
-        box_color = self.canvas.cget('bg')
+        box_color = 'grey'
         text_color = 'white'
 
-        match query_result:
-            case QueryResult.VALID | QueryResult.STAFF:
-                box_color = 'green'
-
-            case QueryResult.REVOKED:
-                box_color = 'red'
-
-        self.canvas.create_rectangle(
+        self.dialog_box = self.canvas.create_rectangle(
             width_padding * 2, canvas_height // 2 + height_padding * 2,
             canvas_width - width_padding * 2, canvas_height - height_padding,
             fill=box_color
         )
 
-        text = query_result.value.title()
-        if query_result == QueryResult.REVOKED and result_data is not None:
-            text += f'\n{result_data}'
+        if result is not None:
+            text = f"{result['text']}\n{result['subtext']}"
+        else:
+            text = 'Waiting...'
 
-        text_label = tk.Label(
+        self.text_label = tk.Label(
             self.canvas, text=text, font=frames.generate_font(font_size=24), bg=box_color, fg=text_color
         )
 
-        text_label.place(relx=0.5, rely=0.8, anchor=tk.CENTER)
+        self.text_label.place(relx=0.5, rely=0.8, anchor=tk.CENTER)
+
+    def update_pass_info_box(self, qr_codes, status: Optional[str] = None):
+        if len(qr_codes) == 0:
+            return
+
+        qr = qr_codes[0]
+
+        data = qr.data.decode('utf-8')
+        result = self.bridge.verify(data)
+
+        if status is None:
+            status_code = result['status']
+
+            if status_code == 200:
+                self.canvas.itemconfig(self.dialog_box, fill='green')
+                self.text_label.config(bg='green')
+            else:
+                self.canvas.itemconfig(self.dialog_box, fill='red')
+                self.text_label.config(bg='red')
+        else:
+            self.canvas.itemconfig(self.dialog_box, fill='yellow')
+            self.text_label.config(bg='orange')
+
+        self.text_label.config(text=result['text'])

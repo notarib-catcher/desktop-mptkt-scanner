@@ -2,7 +2,7 @@ import socket
 import tkinter as tk
 from typing import Optional
 
-from bridge import ServerBridge
+from utils.bridge import ServerBridge
 from frames import generate_font
 
 
@@ -40,8 +40,8 @@ class ControlsFrame:
         self.name_entry = tk.Entry(self.canvas, font=generate_font(font_size=24))
         self.origin_entry = tk.Entry(self.canvas, font=generate_font(font_size=24))
 
-        submit_button = tk.Button(self.canvas, text='Submit', font=generate_font(), command=self.submit_form_data)
-        quit_button = tk.Button(self.canvas, text='Quit', font=generate_font(), command=self.canvas.quit)
+        self.submit_button = tk.Button(self.canvas, text='Submit', font=generate_font(), command=self.submit_form_data)
+        self.quit_button = tk.Button(self.canvas, text='Quit', font=generate_font(), command=self.canvas.quit)
 
         code_label.place(relx=0.35, rely=0.15, anchor=tk.E)
         self.code_entry.place(relx=0.45, rely=0.15, anchor=tk.W)
@@ -52,23 +52,32 @@ class ControlsFrame:
         origin_label.place(relx=0.35, rely=0.45, anchor=tk.E)
         self.origin_entry.place(relx=0.45, rely=0.45, anchor=tk.W)
 
-        quit_button.place(relx=0.35, rely=0.6, anchor=tk.CENTER)
-        submit_button.place(relx=0.625, rely=0.6, anchor=tk.CENTER)
+        self.quit_button.place(relx=0.35, rely=0.6, anchor=tk.CENTER)
+        self.submit_button.place(relx=0.625, rely=0.6, anchor=tk.CENTER)
 
     def submit_form_data(self):
         error_label = tk.Label(self.canvas, text='Code should be an integer.', font=generate_font())
         code = self.code_entry.get()
 
-        code_int: Optional[int] = None
+        code_int: Optional[str] = None
 
         try:
-            code_int = int(code)
+            code_int = str(code)
         except ValueError:
             error_label.place(relx=0.5, rely=0.7, anchor=tk.CENTER)
 
         if code_int is not None:
             self.server_bridge.enroll(self.origin_entry.get(), code_int, self.name_entry.get())
             self.server_bridge.need_init = False
+
+            if self.server_bridge.get_assignment():
+                assignment = self.server_bridge.assignment
+                print(assignment.get('a_id'))
+                print(assignment.get('name'))
+
+            else:
+                print('No assignment found.')
+
             # TODO: Populate the assignment for the server bridge here.
 
     @staticmethod

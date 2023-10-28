@@ -143,8 +143,9 @@ class ServerBridge:
 
         if response.status_code == 200:
             if 'staff' in response.text:
-                default_res['status'] = 'DO NOT IMPEDE'
-                default_res['subtext'] = 'STAFF'
+                default_res['status'] = 200
+                default_res['text'] = 'STAFF'
+                default_res['subtext'] = 'No attendance required.'
 
             return default_res
 
